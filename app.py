@@ -7,7 +7,7 @@ import plotly.express as px
 import pandas as pd
 
 # -- APP VERSION --#
-app_version ="v1.4"
+app_version ="v1.5"
 
 version = html.Div([
     html.Div(f"SLM - Version: {app_version}",
@@ -22,7 +22,7 @@ mytitle = dcc.Markdown(children='# The FishID Budget App') #Header or title of t
 instructions = dcc.Markdown('Hi! Welcome to the FishID Budget App. This app will provide a rough estimation of the investment required to develop a FishID model. Please complete the questions and click submit for the app to display the FishID budget. Default values are displayed on the right before user clicks submit')
 
 #FishID logo
-image_path = "/Users/s2985905/Dropbox/GithubRepos/Dump/assets/FishID_Logo_V7_SL.jpg" #TODO: fix this image that is not being displayed in the app
+#image_path = "https://www.dropbox.com/s/73lp8nar5oqtu1k/FishID_Logo_V7_SL.jpg?dl=1" #TODO: fix this image that is not being displayed in the app
 
 
 #-- SET THEME --#
@@ -112,7 +112,7 @@ column2 = dbc.Col(
 #-- APP LAYOUT--#
 app.layout = dbc.Container(
     [
-        html.Img(src = image_path), #TODO: this is not working
+        app.get_asset_url('FishID_Logo_V7_SL.jpg'), #TODO: this is not working
         mytitle,
         instructions, 
         dbc.Row([column1, column2]),
@@ -121,6 +121,8 @@ app.layout = dbc.Container(
     fluid=True,
     className="dbc",
 )
+
+
 
 
 ## -- CALLBACK --##
@@ -180,3 +182,4 @@ def generate_linegraph(total_cost):
 ##-- DEPLOY --##
 if __name__=='__main__':
     app.run_server(debug=False)
+# %%
