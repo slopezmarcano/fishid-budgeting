@@ -108,11 +108,10 @@ column2 = dbc.Col(
     ]
     )
 
-
 #-- APP LAYOUT--#
 app.layout = dbc.Container(
     [
-        app.get_asset_url('FishID_Logo_V7_SL.jpg'), #TODO: this is not working
+        html.Img(app.get_asset_url('FishID_Logo_V7_SL.jpg')), #TODO: this is not working
         mytitle,
         instructions, 
         dbc.Row([column1, column2]),
