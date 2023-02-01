@@ -27,6 +27,7 @@ image_path = "/Users/s2985905/Dropbox/GithubRepos/Dump/assets/FishID_Logo_V7_SL.
 
 #-- SET THEME --#
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SANDSTONE])
+server = app.server
 
 ##-- MAP TO SELECT LOCATION --#
 # # Create a map figure
@@ -178,4 +179,4 @@ def generate_linegraph(total_cost):
 
 ##-- DEPLOY --##
 if __name__=='__main__':
-    app.run_server(port=8053)
+    app.run_server(debug=False)
