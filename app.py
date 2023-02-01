@@ -7,7 +7,7 @@ import plotly.express as px
 import pandas as pd
 
 # -- APP VERSION --#
-app_version ="v1.4"
+app_version ="v1.5"
 
 version = html.Div([
     html.Div(f"SLM - Version: {app_version}",
@@ -20,9 +20,6 @@ mytitle = dcc.Markdown(children='# The FishID Budget App') #Header or title of t
 
 #Instructions
 instructions = dcc.Markdown('Hi! Welcome to the FishID Budget App. This app will provide a rough estimation of the investment required to develop a FishID model. Please complete the questions and click submit for the app to display the FishID budget. Default values are displayed on the right before user clicks submit')
-
-#FishID logo
-image_path = "/Users/s2985905/Dropbox/GithubRepos/Dump/assets/FishID_Logo_V7_SL.jpg" #TODO: fix this image that is not being displayed in the app
 
 
 #-- SET THEME --#
@@ -108,11 +105,10 @@ column2 = dbc.Col(
     ]
     )
 
-
 #-- APP LAYOUT--#
 app.layout = dbc.Container(
     [
-        html.Img(src = image_path), #TODO: this is not working
+        html.Img(src=app.get_asset_url('FishID_Logo_V7_SL.jpg'), width="100px", height="100px"),
         mytitle,
         instructions, 
         dbc.Row([column1, column2]),
@@ -121,6 +117,8 @@ app.layout = dbc.Container(
     fluid=True,
     className="dbc",
 )
+
+
 
 
 ## -- CALLBACK --##
@@ -157,17 +155,17 @@ def update_output(n_clicks, species_count, species_location, species_type, video
         video_cost = video_count * 50
         total_cost = species_cost + video_cost
     return (
-    f'The total cost of the project is AU ${total_cost}',
+    f'The initial cost of the project is AU ${total_cost}',
     generate_linegraph(total_cost),
     )
 
 
 def generate_linegraph(total_cost):
-    sample_period = range(1, 5)
-    output_value = [total_cost * (1- 0.3 * (i)) for i in range(4)]
+    sample_period = range(1, 8)
+    output_value = [max(total_cost * (1- 0.3 * (i)), 1000) for i in range(7)]
     line_graph = px.line(x=sample_period, y=output_value, labels={'x': 'Sampling Period', 'y': 'Processing and Model Investment in AU$'})
     line_graph.update_layout(
-        title={'text': "30 percent cost reduction for each sampling period", 'font': {'size': 20}},
+        title={'text': "30 percent cost reduction for each sampling period", 'font': {'size': 14}},
         xaxis_title="",
         yaxis_title="",
         xaxis=dict(showgrid=False, zeroline=False),
@@ -177,6 +175,8 @@ def generate_linegraph(total_cost):
     return (line_graph)
 
 
+
 ##-- DEPLOY --##
 if __name__=='__main__':
     app.run_server(debug=False)
+# %%
