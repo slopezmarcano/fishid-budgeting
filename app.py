@@ -5,9 +5,10 @@ from dash import dcc
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import pandas as pd
+import dash_daq as daq
 
 # -- APP VERSION --#
-app_version ="v1.5"
+app_version ="v1.6"
 
 version = html.Div([
     html.Div(f"SLM - Version: {app_version}",
@@ -26,7 +27,7 @@ instructions = dcc.Markdown('Hi! Welcome to the FishID Budget App. This app will
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SANDSTONE])
 server = app.server
 
-##-- MAP TO SELECT LOCATION --#
+##-- MAP TO SELECT LOCATION --# #not being displayed in v1.6
 # # Create a map figure
 data = {"region": ["Pacific Ocean", "Mediterranean Sea", "Caribbean Sea", "Sargasso Sea", 
                     "Atlantic Ocean", "Indian Ocean", "Red Sea"],
@@ -61,15 +62,16 @@ column1 = dbc.Col (
                                             {"label": "Sargasso Sea", "value": 3},
                                             {"label": "Atlantic Ocean", "value": 4},
                                             {"label": "Indian Ocean", "value": 5},
-                                            {"label": "Red Sea", "value": 6}],value=0),
+                                            {"label": "Red Sea", "value": 6},
+                                            {"label": "Baltic Sea", "value": 7},],value=0),
             #dcc.Graph(id="map", figure=location_map)
              ],
             className="mb-3"
             ),
         #no_species_slider
         html.Div(
-            [dbc.Label("Select the no of species to be detected", html_for="slider", style= {'font-weight' : 'bold'}),
-            dcc.Slider(id="species-count", min=5, max=50, step=5, value=5),], className="mb-3"),
+            [dbc.Label("Select the # of species to be detected", html_for="slider", style= {'font-weight' : 'bold'}),
+            dcc.Slider(id="species-count", min=5, max=80, step=10, value=5),], className="mb-3"),
         
         #species_type_dropdown
         html.Div(
@@ -79,8 +81,13 @@ column1 = dbc.Col (
         
         #no_videos_slider
         html.Div(
-            [dbc.Label("Select the no of hours to be processed", html_for="slider", style= {'font-weight' : 'bold'}),
+            [dbc.Label("Select the # of hours to be processed", html_for="slider", style= {'font-weight' : 'bold'}),
             dcc.Slider(id="video-count", min=100, max=1000, step=250, value=100),], className="mb-3"),
+        
+        #no_of habitats
+        html.Div(
+            [dbc.Label("# of distinct habitats where the model will be deployed", html_for="slider", style= {'font-weight' : 'bold'}),
+            dcc.Slider(id="no-habitats", min=1, max=5, step=1, value=1),], className="mb-3"),
 
         #habitat types
         html.Div(
@@ -89,6 +96,15 @@ column1 = dbc.Col (
                                                             {"label": "Rocky Reef", "value": 2}, {"label": "Kelp Forest", "value": 3}, {"label": "Estuaries", "value": 4},
                                                             {"label": "Deep Sea", "value": 5}, {"label": "Aerial", "value": 6}, {"label": "Unstructured habitat", "value": 7} ], value = 0),], className = "mb-3"),
 
+        #annotation support
+        html.Div(
+            [dbc.Label("Do you require FishID's annotation support ?"),
+            daq.BooleanSwitch(id="anno-switch", on = True, color="#388697",)]),
+
+        #development timeframe
+        html.Div(
+            [dbc.Label("Timeframe (months) for model development", html_for="slider", style= {'font-weight' : 'bold'}),
+            dcc.Slider(id="dev-time", min=2, max=10, step=1, value=3),], className="mb-3"),
 
         #submit_button   
         html.Div(
@@ -118,42 +134,53 @@ app.layout = dbc.Container(
     className="dbc",
 )
 
-
-
-
 ## -- CALLBACK --##
 @app.callback(
     [
         dash.dependencies.Output("output1", "children"),
         dash.dependencies.Output("output2", "figure"),
     ],
-    [dash.dependencies.Input("submit-button", "n_clicks")],
+    [   dash.dependencies.Input("anno-switch", "on"),
+        dash.dependencies.Input("submit-button", "n_clicks")],
     [
         dash.dependencies.State("species-count", "value"),
         dash.dependencies.State("map-dropdown", "value"),
         dash.dependencies.State("species-type", "value"),
         dash.dependencies.State("video-count", "value"),
+        dash.dependencies.State("no-habitats", "value"),
         dash.dependencies.State("habitat-type", "value"),
+        dash.dependencies.State("dev-time", "value"),
     ],
 )
-#def update_output(n_clicks, species_count, species_location, species_type, video_count, habitat_type):
-    #species_cost = species_count * 500 if species_location == 0 and species_type == 'commercial' and habitat_type =='seagrass' else species_count * 3000
-    #video_cost = video_count * 50
-    #total_cost = species_cost + video_cost
-    #return (
-        #f'The total cost of the project is AU ${total_cost}',
-        #generate_linegraph(total_cost),
-    #)
 
-def update_output(n_clicks, species_count, species_location, species_type, video_count, habitat_type):
-    if species_location == 0 and species_type == 'commercial' and habitat_type == 0:
-        species_cost = species_count * 500
-        video_cost = video_count * 50
-        total_cost = species_cost + video_cost
+
+def budget_calculation(on, n_clicks, species_count, species_location, species_type, video_count, no_habitats, habitat_type, dev_time):
+    
+    if on: 
+        if species_location == 0 and (species_type == 'commercial' or species_type =='abundant') and habitat_type == 0 and dev_time ==2: #easy-case scenario but with short dev time
+            annos = 500 #for each species commercial species where there is a lot of data
+            dev_cost = 18000 #lower dev time = higher cost . 2 RA for 2 months
+
+            species_cost = species_count * annos * no_habitats
+            video_cost = video_count * 50 #processing cost 
+            total_cost = species_cost + video_cost + dev_cost
+        else:
+            annos = 3000 #for each species for species outside FID region
+            habitat = 5000 #challening habitats fee
+            dev_cost = 6000 * dev_time #standard fee for each month of development
+            
+            species_cost = species_count * annos + habitat * no_habitats
+            video_cost = video_count * 50 #processing cost 
+            total_cost = species_cost + video_cost + dev_cost 
     else:
-        species_cost = species_count * 3000 + 5000 
-        video_cost = video_count * 50
-        total_cost = species_cost + video_cost
+        #no habitat fee
+        #cost of species extremely reduced
+        annos = 100
+        dev_cost = 4000 * dev_time #standard fee for each month of development - lower support tier
+
+        species_cost = species_count * annos * no_habitats
+        video_cost = video_count * 50 #processing cost 
+        total_cost = species_cost + video_cost + dev_cost
     return (
     f'The initial cost of the project is AU ${total_cost}',
     generate_linegraph(total_cost),
