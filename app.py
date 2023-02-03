@@ -8,7 +8,7 @@ import pandas as pd
 import dash_daq as daq
 
 # -- APP VERSION --#
-app_version ="v1.6"
+app_version ="v1.6.1"
 
 version = html.Div([
     html.Div(f"SLM - Version: {app_version}",
@@ -55,7 +55,7 @@ location_map.update_layout(mapbox_center={"lat": -23.256487, "lon": 157.940743},
 column1 = dbc.Col (
     [    #species_location_dropdown
         html.Div(
-            [dbc.Label("Select the location where data will/is collected", html_for="map-dropdown", style= {'font-weight' : 'bold'}),
+            [dbc.Label("Location where data will/is collected", html_for="map-dropdown", style= {'font-weight' : 'bold'}),
             dcc.Dropdown(id="map-dropdown", options=[{"label": "Pacific Ocean", "value": 0},
                                             {"label": "Mediterranean Sea", "value": 1},
                                             {"label": "Caribbean Sea", "value": 2},
@@ -70,7 +70,7 @@ column1 = dbc.Col (
             ),
         #no_species_slider
         html.Div(
-            [dbc.Label("Select the # of species to be detected", html_for="slider", style= {'font-weight' : 'bold'}),
+            [dbc.Label("# of species to be detected", html_for="slider", style= {'font-weight' : 'bold'}),
             dcc.Slider(id="species-count", min=5, max=80, step=10, value=5),], className="mb-3"),
         
         #species_type_dropdown
@@ -81,7 +81,7 @@ column1 = dbc.Col (
         
         #no_videos_slider
         html.Div(
-            [dbc.Label("Select the # of hours to be processed", html_for="slider", style= {'font-weight' : 'bold'}),
+            [dbc.Label("# of hours FishID will process", html_for="slider", style= {'font-weight' : 'bold'}),
             dcc.Slider(id="video-count", min=100, max=1000, step=250, value=100),], className="mb-3"),
         
         #no_of habitats
